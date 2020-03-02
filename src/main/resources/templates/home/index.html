@@ -1,0 +1,117 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: home-header('爱飞头条')" />
+</head>
+<body>
+<th:block th:include="include :: home-top" />
+<article>
+    <!--banner begin-->
+    <div class="banner">
+        <div id="banner" class="fader">
+            <li class="slide" th:each="carousel,cs:${carouselList}">
+                <a th:href="${carousel.getUrl()}" target="_blank">
+                    <img th:src="${carousel.getImage()}" th:alt="${carousel.getTitle()}" th:title="${carousel.getTitle()}">
+                    <span class="imginfo" th:text="${carousel.getTitle()}"></span>
+                </a>
+            </li>
+            <div class="fader_controls">
+                <div class="page prev" data-target="prev">&lsaquo;</div>
+                <div class="page next" data-target="next">&rsaquo;</div>
+                <ul class="pager_list">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--banner end-->
+    <!--随机新闻-->
+    <div class="toppic">
+        <li th:each="news,s:${newsShowTwo}">
+            <a th:href="@{'/home/index/?id=' + ${news.id}}" target="_blank">
+                <i><img th:src="${news.photo}"></i>
+                <h2 th:text="${news.tags}"></h2>
+                <span th:text="${news.title}"></span>
+            </a>
+        </li>
+    </div>
+    <main>
+        <div class="blogtab">
+            <div th:if="${n.getId() != null}">
+                <th:block th:include="include :: home-newsDetail" />
+            </div>
+            <div th:if="${n.getId() == null}">
+                <th:block th:include="include :: home-newsList" />
+            </div>
+        </div>
+    </main>
+    <th:block th:include="include :: home-right" />
+</article>
+<th:block th:include="include :: home-footer" />
+</body>
+</html>
+<script>
+    var submitIndex = 0;
+    $(function () {
+        $("#sumitSelect").click(function () {
+            submitIndex ++;
+            if (submitIndex == 1){
+                return;
+            }
+            submitIndex = 0;
+            $("#searchForm").submit();
+        })
+    })
+
+
+    // 评论文本编辑器
+    layui.use(["jquery", "upload", "form", "layer", "element", "layedit"],
+        function() {
+            $ = layui.jquery;
+            var element = layui.element,
+                layer = layui.layer,
+                upload = layui.upload,
+                layedit = layui.layedit,
+                form = layui.form;
+
+
+            // 建立编辑器
+            var index = layedit.build('commentContent', {
+                tool: ['face'],//设置需要的控件
+                height: 100, //设置高度
+            });
+            form.verify({
+                commentContent: function (value) {
+                    return layedit.sync(index);
+                }
+            });
+
+            //监听提交
+            form.on('submit(add)',function(data) {
+                $.ajax({
+                    url : "/comment/add",
+                    async : true,
+                    type : "POST",
+                    dataType : "json",
+                    data : $('#add_value').serialize(),
+                    // 成功后开启模态框
+                    success : function (source) {
+                        if(source.code == "200"){
+                            layer.alert("评论成功！", {
+                                    icon: 6
+                                },
+                                function() {
+                                    window.location.href = "/home/index/?id=" + $("#newsId").val();
+                                });
+                        } else {
+                            layer.msg(source.msg);
+                        }
+                    },
+                    error : function() {
+                        layer.msg("请求失败！");
+                    }
+                })
+                return false;
+            });
+        })
+</script>
+

@@ -1,0 +1,131 @@
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:include="include :: admin-header('新闻评论修改')" />
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row">
+        <form class="layui-form" id="update_value" method="post">
+            <input type="hidden" name="id" th:value="${comment.getId()}">
+            <div class="layui-form-item">
+                <label for="newsId" class="layui-form-label">
+                    <span class="x-red">*</span>新闻标题
+                </label>
+                <div class="layui-input-inline">
+                    <select name="newsId" id="newsId" lay-verify="required" lay-search="">
+                        <option value="">--请选择新闻标题--</option>
+                    </select>
+                    <input type="hidden" id="newTitle" th:value="${comment.getNewsId()}">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    <span class="x-red">*</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="nickname" class="layui-form-label">
+                    <span class="x-red">*</span>评论昵称
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="nickname" name="nickname" required=""
+                           autocomplete="off" class="layui-input" th:value="${comment.getNickname()}">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    <span class="x-red">*</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="content" class="layui-form-label">
+                    <span class="x-red">*</span>评论内容
+                </label>
+                <div class="layui-input-inline">
+                    <textarea id="content" name="content" autocomplete="off" lay-verify="content" placeholder="请输入内容" class="layui-textarea" th:text="${comment.getContent()}"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    <span class="x-red">*</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label  class="layui-form-label">
+                </label>
+                <button  class="layui-btn" lay-filter="update" lay-submit="">
+                    修改
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+
+
+    layui.use(["jquery", "upload", "form", "layer", "element", "layedit"],
+    function() {
+        $ = layui.jquery;
+        var element = layui.element,
+            layer = layui.layer,
+            upload = layui.upload,
+            layedit = layui.layedit,
+            form = layui.form;
+
+        // 建立编辑器
+        var index = layedit.build('content');
+        form.verify({
+            content: function(value) {
+                return layedit.sync(index);
+            }
+        });
+
+        $(function () {
+            // 绑定下拉框
+            $.post("/news/queryAll", function (data) {
+                for (var k in data)
+                {
+                    $("#newsId").append("<option value='" + data[k].id + "'>" + data[k].title + "</option>");
+                }
+                $("#newsId").val($("#newTitle").val());
+                layui.use('form', function () {
+                    var form = layui.form;
+                    form.render();
+                });
+            });
+        })
+
+
+        //监听提交
+        form.on('submit(update)',function(data) {
+            $.ajax({
+                url : "/comment/update",
+                async : true,
+                type : "POST",
+                dataType : "json",
+                data : $('#update_value').serialize(),
+                // 成功后开启模态框
+                success : function (source) {
+                    if(source.code == "200"){
+                        layer.alert(source.msg, {
+                                icon: 6
+                            },
+                            function() {
+                                //关闭当前frame
+                                xadmin.close();
+
+                                // 可以对父窗口进行刷新
+                                xadmin.father_reload();
+                            });
+                    } else {
+                        layer.alert(source.msg);
+                    }
+                },
+                error : function() {
+                    alert("请求失败");
+                }
+            })
+            return false;
+        });
+    });
+
+
+</script>
+</body>
+
+</html>

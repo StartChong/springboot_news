@@ -1,0 +1,93 @@
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:include="include :: admin-header('新闻类型添加')" />
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row">
+        <form class="layui-form" id="add_value" method="post">
+            <div class="layui-form-item">
+                <label for="name" class="layui-form-label">
+                    <span class="x-red">*</span>新闻类型名称
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="name" name="name" required=""
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    <span class="x-red">*</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="sort" class="layui-form-label">
+                    <span class="x-red">*</span>新闻类型排序
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="sort" name="sort" required=""
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    <span class="x-red">*</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label  class="layui-form-label">
+                </label>
+                <button  class="layui-btn" lay-filter="add" lay-submit="">
+                    增加
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>layui.use(["jquery", "upload", "form", "layer", "element"],
+    function() {
+        $ = layui.jquery;
+        var element = layui.element,
+            layer = layui.layer,
+            upload = layui.upload,
+            form = layui.form;
+
+        //监听提交
+        form.on('submit(add)',function(data) {
+            // $("#add_value").submit();
+            // alert("添加成功");
+            // xadmin.close();
+            // xadmin.father_reload();
+            $.ajax({
+                url : "/newsCategory/add",
+                async : true,
+                type : "POST",
+                dataType : "json",
+                data : $('#add_value').serialize(),
+                // 成功后开启模态框
+                success : function (source) {
+                    if(source.code == "200"){
+                        layer.alert("添加成功", {
+                                icon: 6
+                            },
+                            function() {
+                                //关闭当前frame
+                                xadmin.close();
+
+                                // 可以对父窗口进行刷新
+                                xadmin.father_reload();
+                            });
+                    } else {
+                        layer.alert(source.msg);
+                    }
+                },
+                error : function() {
+                    alert("请求失败");
+                }
+            })
+            return false;
+        });
+    });
+
+
+</script>
+</body>
+
+</html>
